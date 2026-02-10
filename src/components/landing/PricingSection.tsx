@@ -1,10 +1,13 @@
 import { Button } from "@/components/ui/button";
 import { Check, Star } from "lucide-react";
+import { motion } from "framer-motion";
+import { Link } from "react-router-dom";
 
 const plans = [
   {
     name: "Découverte",
     price: "2 500",
+    plan: "decouverte",
     description: "Idéal pour s'initier",
     features: ["1 module au choix", "Support PDF téléchargeable", "Quiz d'évaluation", "Accès forum communautaire"],
     popular: false,
@@ -12,6 +15,7 @@ const plans = [
   {
     name: "Essentiel",
     price: "5 000",
+    plan: "essentiel",
     description: "Le plus populaire",
     features: ["3 modules au choix", "Vidéos + PDF complets", "Quiz + évaluation finale", "Certificat de réussite", "Support par email"],
     popular: true,
@@ -19,6 +23,7 @@ const plans = [
   {
     name: "Premium",
     price: "10 000",
+    plan: "premium",
     description: "L'expérience complète",
     features: ["Accès à tous les modules", "Tous les formats (vidéo, PDF, live)", "Certificat officiel", "Session physique possible", "Support prioritaire", "Accès aux replays illimité"],
     popular: false,
@@ -28,7 +33,13 @@ const plans = [
 const PricingSection = () => (
   <section id="tarifs" className="py-20 bg-background">
     <div className="container mx-auto px-4">
-      <div className="text-center mb-14">
+      <motion.div
+        className="text-center mb-14"
+        initial={{ opacity: 0, y: 20 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true }}
+        transition={{ duration: 0.6 }}
+      >
         <span className="text-sm font-semibold text-accent uppercase tracking-wider">Tarifs</span>
         <h2 className="font-display text-3xl sm:text-4xl font-bold text-foreground mt-2">
           Des prix <span className="gradient-text">accessibles à tous</span>
@@ -36,15 +47,19 @@ const PricingSection = () => (
         <p className="text-muted-foreground mt-3 max-w-xl mx-auto">
           Paiement simple et sécurisé via Mobile Money (Orange, MTN, Moov, Wave).
         </p>
-      </div>
+      </motion.div>
 
       <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
-        {plans.map((plan) => (
-          <div
+        {plans.map((plan, i) => (
+          <motion.div
             key={plan.name}
+            initial={{ opacity: 0, y: 40 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5, delay: i * 0.15 }}
             className={`relative rounded-2xl border p-6 flex flex-col ${
               plan.popular
-                ? "border-primary shadow-xl shadow-primary/10 scale-105"
+                ? "border-primary shadow-xl shadow-primary/10 md:scale-105"
                 : "border-border bg-card"
             }`}
           >
@@ -71,13 +86,15 @@ const PricingSection = () => (
               ))}
             </ul>
 
-            <Button
-              className={`w-full ${plan.popular ? "gradient-primary border-0 text-primary-foreground" : ""}`}
-              variant={plan.popular ? "default" : "outline"}
-            >
-              Choisir ce forfait
-            </Button>
-          </div>
+            <Link to={`/payment?plan=${plan.plan}`}>
+              <Button
+                className={`w-full ${plan.popular ? "gradient-primary border-0 text-primary-foreground" : ""}`}
+                variant={plan.popular ? "default" : "outline"}
+              >
+                Choisir ce forfait
+              </Button>
+            </Link>
+          </motion.div>
         ))}
       </div>
     </div>
