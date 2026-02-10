@@ -1,4 +1,5 @@
 import { BookOpen, Video, FileText, Brain, MessageSquare, Award } from "lucide-react";
+import { motion } from "framer-motion";
 
 const modules = [
   { icon: Brain, title: "Comprendre l'IA", desc: "Les bases de l'intelligence artificielle expliquées simplement", duration: "2h", format: "Vidéo + Quiz" },
@@ -12,7 +13,13 @@ const modules = [
 const ProgramSection = () => (
   <section id="programme" className="py-20 bg-secondary/50">
     <div className="container mx-auto px-4">
-      <div className="text-center mb-14">
+      <motion.div
+        className="text-center mb-14"
+        initial={{ opacity: 0, y: 20 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true }}
+        transition={{ duration: 0.6 }}
+      >
         <span className="text-sm font-semibold text-accent uppercase tracking-wider">Programme</span>
         <h2 className="font-display text-3xl sm:text-4xl font-bold text-foreground mt-2">
           Un parcours complet et <span className="gradient-text">pratique</span>
@@ -20,11 +27,18 @@ const ProgramSection = () => (
         <p className="text-muted-foreground mt-3 max-w-xl mx-auto">
           Des modules progressifs conçus pour vous rendre opérationnel rapidement, quel que soit votre niveau.
         </p>
-      </div>
+      </motion.div>
 
       <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
         {modules.map((mod, i) => (
-          <div key={mod.title} className="rounded-xl border border-border bg-card p-6 hover:shadow-lg hover:shadow-primary/5 transition-all duration-300">
+          <motion.div
+            key={mod.title}
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5, delay: i * 0.1 }}
+            className="rounded-xl border border-border bg-card p-6 hover:shadow-lg hover:shadow-primary/5 transition-all duration-300"
+          >
             <div className="flex items-start gap-4">
               <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg gradient-primary text-primary-foreground">
                 <mod.icon className="h-6 w-6" />
@@ -41,7 +55,7 @@ const ProgramSection = () => (
                 </span>
               </div>
             </div>
-          </div>
+          </motion.div>
         ))}
       </div>
     </div>
