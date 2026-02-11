@@ -3,11 +3,16 @@ import { useNavigate, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import {
   BookOpen, Users, CreditCard, Calendar, Plus, LogOut,
-  BarChart3, FileText, Trash2, Edit, Eye, MessageSquare, TrendingUp
+  BarChart3, FileText, Trash2, Edit, Eye, TrendingUp, Sparkles, Image as ImageIcon, Loader2
 } from "lucide-react";
+import {
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription
+} from "@/components/ui/dialog";
+import MarkdownRenderer from "@/components/MarkdownRenderer";
 
 const Admin = () => {
   const navigate = useNavigate();
@@ -21,16 +26,20 @@ const Admin = () => {
   const [sessions, setSessions] = useState<any[]>([]);
   const [blogPosts, setBlogPosts] = useState<any[]>([]);
 
-  // New course form
   const [newCourse, setNewCourse] = useState({ title: "", description: "", level: "debutant", sector: "education", format: "video", duration_minutes: 60 });
   const [newSession, setNewSession] = useState({ title: "", description: "", scheduled_at: "", duration_minutes: 60, meeting_url: "" });
-  const [newPost, setNewPost] = useState({ title: "", slug: "", content: "" });
+  
+  // AI Blog Editor state
+  const [blogInput, setBlogInput] = useState("");
+  const [generatedPost, setGeneratedPost] = useState<any>(null);
+  const [generating, setGenerating] = useState(false);
+  const [showGenDialog, setShowGenDialog] = useState(false);
+  const [previewPost, setPreviewPost] = useState<any>(null);
 
   useEffect(() => {
     const init = async () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) { navigate("/auth"); return; }
-
       const { data: roles } = await supabase.from("user_roles").select("role").eq("user_id", user.id);
       if (!roles?.some(r => r.role === "admin")) { navigate("/dashboard"); return; }
 
@@ -84,14 +93,69 @@ const Admin = () => {
     setNewSession({ title: "", description: "", scheduled_at: "", duration_minutes: 60, meeting_url: "" });
   };
 
-  const addPost = async () => {
+  // AI Blog Generation
+  const generateBlog = async (withImage: boolean) => {
+    setShowGenDialog(false);
+    setGenerating(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("generate-blog", {
+        body: { content: blogInput, generateImage: withImage },
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+
+      setGeneratedPost({
+        title: data.title || "ARTICLE GÉNÉRÉ",
+        slug: data.slug || "article-" + Date.now(),
+        content: data.content || "",
+        summary: data.summary || "",
+        thumbnail_url: data.image || null,
+      });
+      toast({ title: "Article généré avec succès !" });
+    } catch (err: any) {
+      toast({ title: "Erreur de génération", description: err.message, variant: "destructive" });
+    } finally {
+      setGenerating(false);
+    }
+  };
+
+  const publishPost = async () => {
+    if (!generatedPost) return;
     const { data: { user } } = await supabase.auth.getUser();
-    const { error } = await supabase.from("blog_posts").insert({ ...newPost, author_id: user?.id, is_published: true } as any);
+
+    // If there's a base64 image, upload it to storage first
+    let thumbnailUrl = generatedPost.thumbnail_url;
+    if (thumbnailUrl?.startsWith("data:")) {
+      try {
+        const base64 = thumbnailUrl.split(",")[1];
+        const bytes = Uint8Array.from(atob(base64), c => c.charCodeAt(0));
+        const fileName = `blog/${Date.now()}.png`;
+        const { error: uploadError } = await supabase.storage.from("course-content").upload(fileName, bytes, { contentType: "image/png" });
+        if (!uploadError) {
+          const { data: urlData } = supabase.storage.from("course-content").getPublicUrl(fileName);
+          thumbnailUrl = urlData.publicUrl;
+        }
+      } catch (e) {
+        console.error("Image upload failed:", e);
+        thumbnailUrl = null;
+      }
+    }
+
+    const { error } = await supabase.from("blog_posts").insert({
+      title: generatedPost.title,
+      slug: generatedPost.slug,
+      content: generatedPost.content,
+      thumbnail_url: thumbnailUrl,
+      author_id: user?.id,
+      is_published: true,
+    } as any);
+
     if (error) { toast({ title: "Erreur", description: error.message, variant: "destructive" }); return; }
     toast({ title: "Article publié !" });
     const { data } = await supabase.from("blog_posts").select("*").order("created_at", { ascending: false });
     setBlogPosts(data || []);
-    setNewPost({ title: "", slug: "", content: "" });
+    setGeneratedPost(null);
+    setBlogInput("");
   };
 
   const handleLogout = async () => { await supabase.auth.signOut(); navigate("/"); };
@@ -104,7 +168,7 @@ const Admin = () => {
     { id: "users", label: "Apprenants", icon: Users },
     { id: "payments", label: "Paiements", icon: CreditCard },
     { id: "sessions", label: "Sessions Live", icon: Calendar },
-    { id: "blog", label: "Blog", icon: FileText },
+    { id: "blog", label: "Blog IA", icon: Sparkles },
   ];
 
   return (
@@ -117,16 +181,10 @@ const Admin = () => {
       </header>
 
       <div className="container mx-auto px-4 py-6">
-        {/* Tabs */}
         <div className="flex gap-2 overflow-x-auto pb-4 mb-6">
           {tabs.map(t => (
-            <Button
-              key={t.id}
-              variant={tab === t.id ? "default" : "ghost"}
-              size="sm"
-              onClick={() => setTab(t.id)}
-              className={`gap-2 shrink-0 ${tab === t.id ? "gradient-primary border-0 text-primary-foreground" : ""}`}
-            >
+            <Button key={t.id} variant={tab === t.id ? "default" : "ghost"} size="sm" onClick={() => setTab(t.id)}
+              className={`gap-2 shrink-0 ${tab === t.id ? "gradient-primary border-0 text-primary-foreground" : ""}`}>
               <t.icon className="h-4 w-4" /> {t.label}
             </Button>
           ))}
@@ -149,7 +207,6 @@ const Admin = () => {
                 </div>
               ))}
             </div>
-
             <div className="rounded-xl border border-border bg-card p-6">
               <h3 className="font-display font-semibold text-foreground mb-4">Derniers paiements</h3>
               <div className="overflow-x-auto">
@@ -186,26 +243,17 @@ const Admin = () => {
                 <Input placeholder="Titre du cours" value={newCourse.title} onChange={e => setNewCourse({ ...newCourse, title: e.target.value })} />
                 <Input placeholder="Description" value={newCourse.description} onChange={e => setNewCourse({ ...newCourse, description: e.target.value })} />
                 <select className="rounded-md border border-input bg-background px-3 py-2 text-sm" value={newCourse.level} onChange={e => setNewCourse({ ...newCourse, level: e.target.value })}>
-                  <option value="debutant">Débutant</option>
-                  <option value="intermediaire">Intermédiaire</option>
-                  <option value="avance">Avancé</option>
+                  <option value="debutant">Débutant</option><option value="intermediaire">Intermédiaire</option><option value="avance">Avancé</option>
                 </select>
                 <select className="rounded-md border border-input bg-background px-3 py-2 text-sm" value={newCourse.sector} onChange={e => setNewCourse({ ...newCourse, sector: e.target.value })}>
-                  <option value="education">Éducation</option>
-                  <option value="commerce">Commerce</option>
-                  <option value="sante">Santé</option>
-                  <option value="artisanat">Artisanat</option>
-                  <option value="eglise">Églises</option>
-                  <option value="association">Associations</option>
-                  <option value="entreprise">Entreprises</option>
-                  <option value="agriculture">Agriculture</option>
-                  <option value="cyber_imprimerie">Cyber & Imprimerie</option>
-                  <option value="etudiant">Étudiants</option>
+                  <option value="education">Éducation</option><option value="commerce">Commerce</option><option value="sante">Santé</option>
+                  <option value="artisanat">Artisanat</option><option value="eglise">Églises</option><option value="association">Associations</option>
+                  <option value="entreprise">Entreprises</option><option value="agriculture">Agriculture</option>
+                  <option value="cyber_imprimerie">Cyber & Imprimerie</option><option value="etudiant">Étudiants</option>
                 </select>
               </div>
               <Button onClick={addCourse} className="mt-4 gradient-primary border-0 text-primary-foreground gap-2"><Plus className="h-4 w-4" /> Ajouter</Button>
             </div>
-
             <div className="space-y-3">
               {courses.map((c: any) => (
                 <div key={c.id} className="rounded-xl border border-border bg-card p-4 flex items-center justify-between">
@@ -303,35 +351,128 @@ const Admin = () => {
           </div>
         )}
 
-        {/* Blog */}
+        {/* Blog IA Editor */}
         {tab === "blog" && (
           <div className="space-y-6">
             <div className="rounded-xl border border-border bg-card p-6">
-              <h3 className="font-display font-semibold text-foreground mb-4 flex items-center gap-2"><Plus className="h-5 w-5" /> Nouvel article</h3>
-              <div className="space-y-4">
-                <Input placeholder="Titre de l'article" value={newPost.title} onChange={e => setNewPost({ ...newPost, title: e.target.value, slug: e.target.value.toLowerCase().replace(/[^a-z0-9]+/g, "-") })} />
-                <textarea
-                  className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm min-h-[150px]"
-                  placeholder="Contenu de l'article (Markdown supporté)..."
-                  value={newPost.content}
-                  onChange={e => setNewPost({ ...newPost, content: e.target.value })}
-                />
+              <h3 className="font-display font-semibold text-foreground mb-2 flex items-center gap-2">
+                <Sparkles className="h-5 w-5 text-primary" /> Éditeur d'articles assisté par IA
+              </h3>
+              <p className="text-sm text-muted-foreground mb-4">
+                Écrivez un simple mot, une phrase ou un paragraphe. L'IA génèrera un article complet et professionnel.
+              </p>
+
+              <Textarea
+                placeholder="Ex: Lancement formation agriculture IA, Forum agricole 2026, Comment l'IA transforme l'éducation..."
+                value={blogInput}
+                onChange={e => setBlogInput(e.target.value)}
+                className="min-h-[120px] mb-4"
+              />
+
+              <div className="flex gap-3">
+                <Button
+                  onClick={() => setShowGenDialog(true)}
+                  disabled={!blogInput.trim() || generating}
+                  className="gradient-primary border-0 text-primary-foreground gap-2"
+                >
+                  {generating ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
+                  {generating ? "Génération en cours..." : "Générer l'article"}
+                </Button>
               </div>
-              <Button onClick={addPost} className="mt-4 gradient-primary border-0 text-primary-foreground gap-2"><Plus className="h-4 w-4" /> Publier</Button>
-            </div>
-            <div className="space-y-3">
-              {blogPosts.map((p: any) => (
-                <div key={p.id} className="rounded-xl border border-border bg-card p-4 flex items-center justify-between">
-                  <div>
-                    <h4 className="font-display font-semibold text-foreground text-sm">{p.title}</h4>
-                    <p className="text-xs text-muted-foreground">{new Date(p.created_at).toLocaleDateString("fr-FR")} • {p.is_published ? "Publié" : "Brouillon"}</p>
+
+              {/* Generation Dialog */}
+              <Dialog open={showGenDialog} onOpenChange={setShowGenDialog}>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>Générer le contenu</DialogTitle>
+                    <DialogDescription>Choisissez le mode de génération</DialogDescription>
+                  </DialogHeader>
+                  <div className="space-y-3 pt-4">
+                    <Button onClick={() => generateBlog(true)} className="w-full gap-2 gradient-primary border-0 text-primary-foreground">
+                      <ImageIcon className="h-4 w-4" /> Avec image générée par IA
+                    </Button>
+                    <Button onClick={() => generateBlog(false)} variant="outline" className="w-full gap-2">
+                      <FileText className="h-4 w-4" /> Sans image
+                    </Button>
                   </div>
+                </DialogContent>
+              </Dialog>
+            </div>
+
+            {/* Generated Preview */}
+            {generatedPost && (
+              <div className="rounded-xl border-2 border-primary/30 bg-card p-6">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="font-display font-semibold text-foreground flex items-center gap-2">
+                    <Eye className="h-5 w-5" /> Aperçu de l'article
+                  </h3>
                   <div className="flex gap-2">
-                    <Button variant="ghost" size="icon"><Edit className="h-4 w-4" /></Button>
+                    <Button variant="outline" size="sm" onClick={() => setGeneratedPost(null)}>Annuler</Button>
+                    <Button size="sm" onClick={publishPost} className="gradient-primary border-0 text-primary-foreground gap-1">
+                      <Plus className="h-4 w-4" /> Publier
+                    </Button>
                   </div>
                 </div>
-              ))}
+
+                {generatedPost.thumbnail_url && (
+                  <img src={generatedPost.thumbnail_url} alt="" className="w-full h-48 object-cover rounded-lg mb-4" />
+                )}
+
+                <h2 className="font-display text-xl font-bold text-foreground mb-2 uppercase">{generatedPost.title}</h2>
+                {generatedPost.summary && (
+                  <p className="text-muted-foreground italic mb-4">{generatedPost.summary}</p>
+                )}
+
+                {/* Editable fields */}
+                <div className="space-y-3 mb-4 p-4 rounded-lg bg-muted/50">
+                  <div>
+                    <label className="text-xs font-medium text-muted-foreground">Titre</label>
+                    <Input value={generatedPost.title} onChange={e => setGeneratedPost({ ...generatedPost, title: e.target.value })} />
+                  </div>
+                  <div>
+                    <label className="text-xs font-medium text-muted-foreground">Slug URL</label>
+                    <Input value={generatedPost.slug} onChange={e => setGeneratedPost({ ...generatedPost, slug: e.target.value })} />
+                  </div>
+                  <div>
+                    <label className="text-xs font-medium text-muted-foreground">Contenu (Markdown)</label>
+                    <Textarea value={generatedPost.content} onChange={e => setGeneratedPost({ ...generatedPost, content: e.target.value })} className="min-h-[200px] font-mono text-xs" />
+                  </div>
+                </div>
+
+                <div className="border-t border-border pt-4">
+                  <h4 className="text-sm font-medium text-muted-foreground mb-3">Rendu final :</h4>
+                  <MarkdownRenderer content={generatedPost.content} />
+                </div>
+              </div>
+            )}
+
+            {/* Existing posts */}
+            <div>
+              <h3 className="font-display font-semibold text-foreground mb-3">Articles publiés ({blogPosts.length})</h3>
+              <div className="space-y-3">
+                {blogPosts.map((p: any) => (
+                  <div key={p.id} className="rounded-xl border border-border bg-card p-4 flex items-center justify-between">
+                    <div className="flex-1 min-w-0">
+                      <h4 className="font-display font-semibold text-foreground text-sm truncate">{p.title}</h4>
+                      <p className="text-xs text-muted-foreground">{new Date(p.created_at).toLocaleDateString("fr-FR")} • {p.is_published ? "Publié" : "Brouillon"}</p>
+                    </div>
+                    <div className="flex gap-2">
+                      <Button variant="ghost" size="icon" onClick={() => setPreviewPost(p)}><Eye className="h-4 w-4" /></Button>
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
+
+            {/* Preview existing post */}
+            <Dialog open={!!previewPost} onOpenChange={() => setPreviewPost(null)}>
+              <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+                <DialogHeader>
+                  <DialogTitle className="uppercase">{previewPost?.title}</DialogTitle>
+                </DialogHeader>
+                {previewPost && <MarkdownRenderer content={previewPost.content || ""} />}
+              </DialogContent>
+            </Dialog>
           </div>
         )}
       </div>
