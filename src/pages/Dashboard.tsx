@@ -31,16 +31,12 @@ const Dashboard = () => {
     init();
   }, [navigate]);
 
-  const handleLogout = async () => {
-    await supabase.auth.signOut();
-    navigate("/");
-  };
+  const handleLogout = async () => { await supabase.auth.signOut(); navigate("/"); };
 
   if (loading) return <div className="min-h-screen flex items-center justify-center"><div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full" /></div>;
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
       <header className="border-b border-border bg-card">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
           <Link to="/" className="font-display text-xl font-bold text-foreground">IA Pour Tous</Link>
@@ -52,7 +48,6 @@ const Dashboard = () => {
       </header>
 
       <div className="container mx-auto px-4 py-8">
-        {/* Welcome */}
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="mb-8">
           <h1 className="font-display text-2xl sm:text-3xl font-bold text-foreground">
             Bonjour, {profile?.full_name || "Apprenant"} 👋
@@ -65,7 +60,6 @@ const Dashboard = () => {
           </p>
         </motion.div>
 
-        {/* Stats Grid */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
           {[
             { icon: BookOpen, label: "Cours inscrits", value: enrollments.length, color: "text-primary" },
@@ -73,13 +67,8 @@ const Dashboard = () => {
             { icon: Award, label: "Certificats", value: enrollments.filter(e => e.completed).length, color: "text-green-500" },
             { icon: Calendar, label: "Sessions live", value: sessions.length, color: "text-orange-500" },
           ].map((stat, i) => (
-            <motion.div
-              key={stat.label}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: i * 0.1 }}
-              className="rounded-xl border border-border bg-card p-4 sm:p-5"
-            >
+            <motion.div key={stat.label} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.1 }}
+              className="rounded-xl border border-border bg-card p-4 sm:p-5">
               <stat.icon className={`h-6 w-6 ${stat.color} mb-2`} />
               <div className="font-display text-2xl font-bold text-foreground">{stat.value}</div>
               <div className="text-xs text-muted-foreground">{stat.label}</div>
@@ -88,7 +77,6 @@ const Dashboard = () => {
         </div>
 
         <div className="grid lg:grid-cols-3 gap-6">
-          {/* My Courses */}
           <div className="lg:col-span-2 space-y-4">
             <h2 className="font-display text-lg font-bold text-foreground">Mes Cours</h2>
             {enrollments.length === 0 ? (
@@ -112,13 +100,14 @@ const Dashboard = () => {
                       <span className="text-xs text-muted-foreground">{enrollment.progress_percent}%</span>
                     </div>
                   </div>
-                  <Button variant="ghost" size="sm" className="text-primary shrink-0">Continuer</Button>
+                  <Link to={`/cours/${enrollment.course_id}`}>
+                    <Button variant="ghost" size="sm" className="text-primary shrink-0">Continuer</Button>
+                  </Link>
                 </div>
               ))
             )}
           </div>
 
-          {/* Upcoming Sessions */}
           <div className="space-y-4">
             <h2 className="font-display text-lg font-bold text-foreground">Sessions Live</h2>
             {sessions.length === 0 ? (
@@ -153,7 +142,6 @@ const Dashboard = () => {
           </div>
         </div>
 
-        {/* Quick Links */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-8">
           {[
             { icon: BookOpen, label: "Catalogue", to: "/catalogue" },

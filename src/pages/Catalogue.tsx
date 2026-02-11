@@ -150,9 +150,11 @@ const Catalogue = () => {
                       <span className="flex items-center gap-1 text-xs text-muted-foreground">
                         <Clock className="h-3 w-3" /> {course.duration_minutes} min
                       </span>
-                      <Button size="sm" variant="ghost" className="text-primary gap-1 group-hover:gap-2 transition-all">
-                        Voir <ArrowRight className="h-3 w-3" />
-                      </Button>
+                      <Link to={`/cours/${course.id}`}>
+                        <Button size="sm" variant="ghost" className="text-primary gap-1 group-hover:gap-2 transition-all">
+                          Voir <ArrowRight className="h-3 w-3" />
+                        </Button>
+                      </Link>
                     </div>
                   </div>
                 </motion.div>

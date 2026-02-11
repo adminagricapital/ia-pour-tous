@@ -7,10 +7,12 @@ import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import Dashboard from "./pages/Dashboard";
 import Admin from "./pages/Admin";
+import AdminSetup from "./pages/AdminSetup";
 import Catalogue from "./pages/Catalogue";
 import Payment from "./pages/Payment";
 import Blog from "./pages/Blog";
 import Forum from "./pages/Forum";
+import CourseReader from "./pages/CourseReader";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -26,10 +28,12 @@ const App = () => (
           <Route path="/auth" element={<Auth />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/admin" element={<Admin />} />
+          <Route path="/admin/setup" element={<AdminSetup />} />
           <Route path="/catalogue" element={<Catalogue />} />
           <Route path="/payment" element={<Payment />} />
           <Route path="/blog" element={<Blog />} />
           <Route path="/forum" element={<Forum />} />
+          <Route path="/cours/:courseId" element={<CourseReader />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
