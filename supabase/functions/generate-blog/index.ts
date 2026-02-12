@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -94,9 +95,10 @@ Réponds UNIQUEMENT avec un JSON valide (pas de markdown autour) :
     }
 
     // Generate image if requested
-    let imageBase64 = null;
+    let imageUrl = null;
     if (generateImage) {
       try {
+        console.log("Starting image generation for:", article.title);
         const imgResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
           method: "POST",
           headers: {
@@ -115,16 +117,88 @@ Réponds UNIQUEMENT avec un JSON valide (pas de markdown autour) :
           }),
         });
         
+        console.log("Image generation response status:", imgResponse.status);
+        
         if (imgResponse.ok) {
           const imgData = await imgResponse.json();
-          imageBase64 = imgData.choices?.[0]?.message?.images?.[0]?.image_url?.url || null;
+          console.log("Image response keys:", JSON.stringify(Object.keys(imgData)));
+          
+          // Try multiple possible response formats
+          const msg = imgData.choices?.[0]?.message;
+          let base64Data = null;
+          
+          // Format 1: images array
+          if (msg?.images?.[0]?.image_url?.url) {
+            base64Data = msg.images[0].image_url.url;
+            console.log("Found image in images array format");
+          }
+          // Format 2: content with inline_data parts
+          else if (msg?.content && Array.isArray(msg.content)) {
+            for (const part of msg.content) {
+              if (part.type === "image_url" && part.image_url?.url) {
+                base64Data = part.image_url.url;
+                console.log("Found image in content array format");
+                break;
+              }
+            }
+          }
+          // Format 3: direct base64 in a field
+          else if (msg?.image) {
+            base64Data = msg.image;
+            console.log("Found image in direct image field");
+          }
+          
+          console.log("base64Data found:", !!base64Data, base64Data ? `length: ${base64Data.length}` : "null");
+          
+          // Upload to Supabase Storage if we got base64
+          if (base64Data) {
+            try {
+              // Strip the data URI prefix if present
+              const rawBase64 = base64Data.includes(",") ? base64Data.split(",")[1] : base64Data;
+              
+              // Decode base64 to bytes
+              const binaryString = atob(rawBase64);
+              const bytes = new Uint8Array(binaryString.length);
+              for (let i = 0; i < binaryString.length; i++) {
+                bytes[i] = binaryString.charCodeAt(i);
+              }
+              
+              const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+              const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+              const supabaseAdmin = createClient(supabaseUrl, supabaseKey);
+              
+              const fileName = `blog/ai-${Date.now()}.png`;
+              const { error: uploadError } = await supabaseAdmin.storage
+                .from("course-content")
+                .upload(fileName, bytes, { contentType: "image/png", upsert: true });
+              
+              if (uploadError) {
+                console.error("Storage upload error:", uploadError.message);
+              } else {
+                const { data: urlData } = supabaseAdmin.storage
+                  .from("course-content")
+                  .getPublicUrl(fileName);
+                imageUrl = urlData.publicUrl;
+                console.log("Image uploaded successfully:", imageUrl);
+              }
+            } catch (uploadErr) {
+              console.error("Upload processing error:", uploadErr);
+              // Fallback: return base64 directly
+              imageUrl = base64Data.startsWith("data:") ? base64Data : `data:image/png;base64,${base64Data}`;
+            }
+          } else {
+            console.log("Full image response message:", JSON.stringify(msg).substring(0, 500));
+          }
+        } else {
+          const errText = await imgResponse.text();
+          console.error("Image generation failed:", imgResponse.status, errText);
         }
       } catch (imgErr) {
-        console.error("Image generation failed:", imgErr);
+        console.error("Image generation error:", imgErr);
       }
     }
 
-    return new Response(JSON.stringify({ ...article, image: imageBase64 }), {
+    return new Response(JSON.stringify({ ...article, image: imageUrl }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (e) {
