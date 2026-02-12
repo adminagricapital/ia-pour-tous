@@ -7,7 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import {
   BookOpen, Users, CreditCard, Calendar, Plus, LogOut,
-  BarChart3, FileText, Trash2, Edit, Eye, TrendingUp, Sparkles, Image as ImageIcon, Loader2
+  BarChart3, FileText, Trash2, Edit, Eye, TrendingUp, Sparkles, Image as ImageIcon, Loader2, Upload
 } from "lucide-react";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription
@@ -414,9 +414,42 @@ const Admin = () => {
                   </div>
                 </div>
 
-                {generatedPost.thumbnail_url && (
-                  <img src={generatedPost.thumbnail_url} alt="" className="w-full h-48 object-cover rounded-lg mb-4" />
-                )}
+                {/* Image section with upload/replace */}
+                <div className="mb-4">
+                  {generatedPost.thumbnail_url && (
+                    <img src={generatedPost.thumbnail_url} alt="" className="w-full h-48 object-cover rounded-lg mb-2" />
+                  )}
+                  <div className="flex gap-2">
+                    <label className="cursor-pointer">
+                      <input
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        onChange={async (e) => {
+                          const file = e.target.files?.[0];
+                          if (!file) return;
+                          const fileName = `blog/${Date.now()}-${file.name}`;
+                          const { error: uploadError } = await supabase.storage.from("course-content").upload(fileName, file, { contentType: file.type, upsert: true });
+                          if (uploadError) {
+                            toast({ title: "Erreur upload", description: uploadError.message, variant: "destructive" });
+                            return;
+                          }
+                          const { data: urlData } = supabase.storage.from("course-content").getPublicUrl(fileName);
+                          setGeneratedPost({ ...generatedPost, thumbnail_url: urlData.publicUrl });
+                          toast({ title: "Image mise à jour !" });
+                        }}
+                      />
+                      <span className="inline-flex items-center gap-1 px-3 py-1.5 rounded-md border border-input bg-background text-sm hover:bg-accent transition-colors">
+                        <Upload className="h-3 w-3" /> {generatedPost.thumbnail_url ? "Remplacer l'image" : "Ajouter une image"}
+                      </span>
+                    </label>
+                    {generatedPost.thumbnail_url && (
+                      <Button variant="ghost" size="sm" onClick={() => setGeneratedPost({ ...generatedPost, thumbnail_url: null })} className="text-destructive text-xs">
+                        Supprimer l'image
+                      </Button>
+                    )}
+                  </div>
+                </div>
 
                 <h2 className="font-display text-xl font-bold text-foreground mb-2 uppercase">{generatedPost.title}</h2>
                 {generatedPost.summary && (
