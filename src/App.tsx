@@ -10,6 +10,8 @@ import Admin from "./pages/Admin";
 import AdminSetup from "./pages/AdminSetup";
 import Catalogue from "./pages/Catalogue";
 import Payment from "./pages/Payment";
+import PaymentSuccess from "./pages/PaymentSuccess";
+import PaymentError from "./pages/PaymentError";
 import Blog from "./pages/Blog";
 import Forum from "./pages/Forum";
 import CourseReader from "./pages/CourseReader";
@@ -31,6 +33,8 @@ const App = () => (
           <Route path="/admin/setup" element={<AdminSetup />} />
           <Route path="/catalogue" element={<Catalogue />} />
           <Route path="/payment" element={<Payment />} />
+          <Route path="/payment/success" element={<PaymentSuccess />} />
+          <Route path="/payment/error" element={<PaymentError />} />
           <Route path="/blog" element={<Blog />} />
           <Route path="/forum" element={<Forum />} />
           <Route path="/cours/:courseId" element={<CourseReader />} />

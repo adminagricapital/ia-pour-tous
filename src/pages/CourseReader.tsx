@@ -3,7 +3,7 @@ import { useParams, useNavigate, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { ArrowLeft, BookOpen, FileText, Play, CheckCircle, ChevronRight, Award, Download } from "lucide-react";
+import { ArrowLeft, BookOpen, Play, CheckCircle, ChevronRight, Award, Bookmark, Wifi, WifiOff } from "lucide-react";
 import { motion } from "framer-motion";
 import MarkdownRenderer from "@/components/MarkdownRenderer";
 
@@ -20,6 +20,7 @@ const CourseReader = () => {
   const [quizResult, setQuizResult] = useState<any>(null);
   const [enrollment, setEnrollment] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [savedOffline, setSavedOffline] = useState(false);
 
   useEffect(() => {
     const init = async () => {
@@ -37,7 +38,6 @@ const CourseReader = () => {
       setEnrollment(enrollRes.data);
 
       if (!enrollRes.data) {
-        // Auto-enroll
         await supabase.from("enrollments").insert({ course_id: courseId!, user_id: user.id });
       }
 
@@ -46,6 +46,24 @@ const CourseReader = () => {
     };
     init();
   }, [courseId, navigate]);
+
+  const saveForOffline = async () => {
+    if (!("caches" in window)) {
+      toast({ title: "Non supporté", description: "Votre navigateur ne supporte pas le cache hors ligne.", variant: "destructive" });
+      return;
+    }
+    try {
+      const cache = await caches.open("course-content-v1");
+      // Cache current page content
+      const contentToCache = JSON.stringify({ course, modules, activeModule });
+      const response = new Response(contentToCache, { headers: { "Content-Type": "application/json" } });
+      await cache.put(`/offline/course/${courseId}`, response);
+      setSavedOffline(true);
+      toast({ title: "Sauvegardé ! 📱", description: "Ce cours est disponible hors ligne." });
+    } catch {
+      toast({ title: "Erreur", description: "Impossible de sauvegarder hors ligne.", variant: "destructive" });
+    }
+  };
 
   const loadQuiz = async (moduleId: string) => {
     const { data: quizData } = await supabase.from("quizzes").select("*").eq("module_id", moduleId).maybeSingle();
@@ -92,7 +110,6 @@ const CourseReader = () => {
     setQuizResult({ score, passed, correct, total: quizQuestions.length });
 
     if (passed) {
-      // Update progress
       const moduleIndex = modules.findIndex(m => m.id === activeModule.id);
       const newProgress = Math.round(((moduleIndex + 1) / modules.length) * 100);
       await supabase.from("enrollments").update({
@@ -118,11 +135,20 @@ const CourseReader = () => {
             <h1 className="font-display font-bold text-foreground text-sm truncate">{course?.title}</h1>
             <p className="text-xs text-muted-foreground">{modules.length} modules</p>
           </div>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={saveForOffline}
+            className={`gap-1 text-xs ${savedOffline ? "text-green-600 border-green-300" : ""}`}
+          >
+            {savedOffline ? <WifiOff className="h-3 w-3" /> : <Bookmark className="h-3 w-3" />}
+            {savedOffline ? "Sauvegardé" : "Lire hors ligne"}
+          </Button>
         </div>
       </header>
 
       <div className="flex flex-col lg:flex-row">
-        {/* Sidebar - Module list */}
+        {/* Sidebar */}
         <aside className="w-full lg:w-80 border-b lg:border-b-0 lg:border-r border-border bg-card lg:min-h-[calc(100vh-57px)] overflow-y-auto">
           <div className="p-4">
             <h2 className="font-display font-semibold text-foreground text-sm mb-3">Modules</h2>
@@ -155,7 +181,7 @@ const CourseReader = () => {
             <motion.div key={activeModule.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
               <h2 className="font-display text-xl sm:text-2xl font-bold text-foreground mb-4">{activeModule.title}</h2>
 
-              {/* Video player */}
+              {/* Video player (streaming only, no download) */}
               {activeModule.video_url && (
                 <div className="mb-6 rounded-xl overflow-hidden border border-border bg-black aspect-video">
                   <iframe
@@ -168,24 +194,9 @@ const CourseReader = () => {
                 </div>
               )}
 
-              {/* PDF viewer */}
-              {activeModule.pdf_url && (
-                <div className="mb-6">
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-sm font-medium text-foreground flex items-center gap-2"><FileText className="h-4 w-4" /> Document PDF</span>
-                    <a href={activeModule.pdf_url} target="_blank" rel="noopener noreferrer">
-                      <Button variant="outline" size="sm" className="gap-1"><Download className="h-3 w-3" /> Télécharger</Button>
-                    </a>
-                  </div>
-                  <div className="rounded-xl overflow-hidden border border-border" style={{ height: "600px" }}>
-                    <iframe src={activeModule.pdf_url} className="w-full h-full" title="PDF" />
-                  </div>
-                </div>
-              )}
-
-              {/* Module content */}
+              {/* Module content - no PDF, direct rendering */}
               {activeModule.content && (
-                <div className="mb-6 rounded-xl border border-border bg-card p-6">
+                <div className="mb-6 rounded-xl border border-border bg-card p-4 sm:p-6 lg:p-8">
                   <MarkdownRenderer content={activeModule.content} />
                 </div>
               )}
@@ -197,7 +208,7 @@ const CourseReader = () => {
                 </Button>
               )}
 
-              {/* Quiz */}
+              {/* Quiz section */}
               {quiz && quizQuestions.length > 0 && (
                 <div className="rounded-xl border border-border bg-card p-6">
                   <h3 className="font-display text-lg font-bold text-foreground mb-4 flex items-center gap-2">
