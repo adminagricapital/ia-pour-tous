@@ -2,3 +2,9 @@ project_id = "isuoapnmibsvgnxwfnlb"
 
 [functions.generate-blog]
 verify_jwt = false
+
+[functions.wave-checkout]
+verify_jwt = false
+
+[functions.wave-webhook]
+verify_jwt = false
