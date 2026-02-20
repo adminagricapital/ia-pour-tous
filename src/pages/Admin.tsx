@@ -7,12 +7,13 @@ import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import {
   BookOpen, Users, CreditCard, Calendar, Plus, LogOut,
-  BarChart3, FileText, Trash2, Edit, Eye, TrendingUp, Sparkles, Image as ImageIcon, Loader2, Upload
+  BarChart3, FileText, Trash2, Eye, TrendingUp, Sparkles, Image as ImageIcon, Loader2, Upload, Brain
 } from "lucide-react";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription
 } from "@/components/ui/dialog";
 import MarkdownRenderer from "@/components/MarkdownRenderer";
+import AdminCourseGenerator from "@/components/admin/AdminCourseGenerator";
 
 const Admin = () => {
   const navigate = useNavigate();
@@ -164,6 +165,7 @@ const Admin = () => {
 
   const tabs = [
     { id: "overview", label: "Vue d'ensemble", icon: BarChart3 },
+    { id: "ai-courses", label: "🧠 Créer avec IA", icon: Brain },
     { id: "courses", label: "Cours", icon: BookOpen },
     { id: "users", label: "Apprenants", icon: Users },
     { id: "payments", label: "Paiements", icon: CreditCard },
@@ -189,6 +191,15 @@ const Admin = () => {
             </Button>
           ))}
         </div>
+
+        {/* AI Course Generator */}
+        {tab === "ai-courses" && (
+          <AdminCourseGenerator onCoursePublished={async () => {
+            const { data } = await supabase.from("courses").select("*").order("created_at", { ascending: false });
+            setCourses(data || []);
+            setTab("courses");
+          }} />
+        )}
 
         {/* Overview */}
         {tab === "overview" && (
