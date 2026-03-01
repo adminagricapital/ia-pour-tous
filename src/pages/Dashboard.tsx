@@ -236,7 +236,7 @@ const Dashboard = () => {
                   { icon: BookOpen, label: "Catalogue", to: "/catalogue" },
                   { icon: MessageSquare, label: "Forum", to: "/forum" },
                   { icon: TrendingUp, label: "Blog IA", to: "/blog" },
-                  { icon: User, label: "Mon profil", to: "/dashboard" },
+                  { icon: User, label: "Mon profil", to: "/profil" },
                 ].map((link) => (
                   <Link
                     key={link.label}

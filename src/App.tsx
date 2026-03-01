@@ -16,6 +16,7 @@ import Blog from "./pages/Blog";
 import Forum from "./pages/Forum";
 import CourseReader from "./pages/CourseReader";
 import NotFound from "./pages/NotFound";
+import Profile from "./pages/Profile";
 
 const queryClient = new QueryClient();
 
@@ -29,6 +30,7 @@ const App = () => (
           <Route path="/" element={<Index />} />
           <Route path="/auth" element={<Auth />} />
           <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/profil" element={<Profile />} />
           <Route path="/admin" element={<Admin />} />
           <Route path="/admin/setup" element={<AdminSetup />} />
           <Route path="/catalogue" element={<Catalogue />} />
