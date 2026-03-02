@@ -20,7 +20,7 @@ const HeroSection = () => (
           className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-4 py-1.5 text-sm text-primary-foreground mb-6"
         >
           <span className="h-2 w-2 rounded-full bg-accent animate-pulse" />
-          Plateforme N°1 d'initiation à l'IA en Afrique
+          Formation pratique à l'Intelligence Artificielle
         </motion.div>
 
         <motion.h1
@@ -40,7 +40,7 @@ const HeroSection = () => (
           className="text-base sm:text-lg text-primary-foreground/80 mb-8 max-w-xl"
         >
           Enseignants, commerçants, artisans, pasteurs, agriculteurs, étudiants… Quel que soit votre métier, 
-          maîtrisez l'IA et transformez votre quotidien. Formations pratiques à partir de <strong>2 500 FCFA</strong>.
+          maîtrisez l'IA et transformez votre quotidien. Formations pratiques à partir de <strong>500 FCFA/semaine</strong>.
         </motion.p>
 
         <motion.div
@@ -56,7 +56,7 @@ const HeroSection = () => (
           </Link>
           <Link to="/catalogue">
             <Button size="lg" variant="outline" className="gap-2 text-base border-primary-foreground/30 text-primary-foreground bg-primary-foreground/10 hover:bg-primary-foreground/20">
-              <Play className="h-5 w-5" /> Voir la démo
+              <Play className="h-5 w-5" /> Voir le catalogue
             </Button>
           </Link>
         </motion.div>
@@ -68,9 +68,9 @@ const HeroSection = () => (
           className="flex gap-8 mt-12"
         >
           {[
-            { value: "500+", label: "Apprenants" },
-            { value: "12", label: "Modules" },
-            { value: "98%", label: "Satisfaction" },
+            { value: "11+", label: "Secteurs" },
+            { value: "50+", label: "Modules" },
+            { value: "100%", label: "Pratique" },
           ].map((stat) => (
             <div key={stat.label}>
               <div className="font-display text-2xl font-bold text-primary-foreground">{stat.value}</div>

@@ -8,9 +8,10 @@ const plans = [
     name: "Découverte",
     price: "Gratuit",
     priceNum: "0",
+    period: "",
     plan: "decouverte",
     icon: Zap,
-    description: "Pour débuter votre parcours IA",
+    description: "Testez sans engagement",
     color: "hsl(220, 20%, 30%)",
     features: [
       "Accès à 2 modules d'initiation",
@@ -18,68 +19,67 @@ const plans = [
       "Forum communautaire",
       "Support par email",
     ],
-    limitations: ["Certificats non inclus", "Modules avancés non inclus"],
     popular: false,
     cta: "Commencer gratuitement",
   },
   {
     name: "Essentiel",
-    price: "5 000",
-    priceNum: "5000",
+    price: "500",
+    priceNum: "500",
+    period: "/semaine",
     plan: "essentiel",
     icon: Shield,
-    description: "L'entrée dans le monde IA",
+    description: "Pour bien démarrer",
     color: "hsl(217, 90%, 42%)",
     features: [
-      "Accès illimité aux modules de base",
+      "Accès aux modules de base",
       "Vidéos de formation",
-      "Quiz + évaluation finale",
-      "Certificat de réussite numérique",
+      "Quiz + évaluation",
+      "Certificat numérique",
       "Support par email",
       "Accès au forum abonnés",
     ],
-    limitations: [],
     popular: false,
     cta: "Choisir Essentiel",
   },
   {
     name: "Avancé",
-    price: "12 500",
-    priceNum: "12500",
+    price: "1 500",
+    priceNum: "1500",
+    period: "/semaine",
     plan: "avance",
     icon: Rocket,
-    description: "Pour progresser rapidement",
+    description: "Pour progresser vite",
     color: "hsl(217, 90%, 42%)",
     features: [
       "Tout le plan Essentiel",
-      "Accès aux modules avancés",
-      "Alertes personnalisées prioritaires",
+      "Modules avancés inclus",
+      "Alertes personnalisées",
       "Support prioritaire",
-      "Accès au forum abonnés",
       "Webinaires mensuels",
+      "Replays des formations",
     ],
-    limitations: [],
     popular: true,
     cta: "Choisir Avancé",
   },
   {
     name: "Premium",
-    price: "20 000",
-    priceNum: "20000",
+    price: "2 500",
+    priceNum: "2500",
+    period: "/semaine",
     plan: "premium",
     icon: Crown,
     description: "L'expérience complète",
     color: "hsl(36, 95%, 48%)",
     features: [
       "Tout le plan Avancé",
-      "Accès à TOUS les modules & secteurs",
-      "Alertes stratégiques prioritaires",
-      "Support VIP",
-      "Webinaires mensuels + Replays",
+      "TOUS les modules & secteurs",
+      "Support VIP dédié",
+      "Webinaires illimités + Replays",
       "Certificats officiels avec cachet",
       "Sessions coaching individuel",
+      "Bonus : session stratégique",
     ],
-    limitations: [],
     popular: false,
     cta: "Choisir Premium",
   },
@@ -99,11 +99,11 @@ const PricingSection = () => (
           style={{ background: "hsl(217, 90%, 95%)", color: "hsl(217, 90%, 42%)" }}>
           Nos Forfaits
         </span>
-        <h2 className="font-display text-3xl sm:text-4xl font-bold mb-4" style={{ color: "hsl(220, 20%, 10%)" }}>
+        <h2 className="font-display text-3xl sm:text-4xl font-bold mb-4 text-foreground">
           Des prix <span className="gradient-text">accessibles à tous</span>
         </h2>
-        <p className="text-base max-w-xl mx-auto" style={{ color: "hsl(220, 10%, 40%)" }}>
-          Paiement simple et sécurisé via Wave, Orange Money, MTN Money. Commencez gratuitement, évoluez selon vos besoins.
+        <p className="text-base max-w-xl mx-auto text-muted-foreground">
+          À partir de <strong>500 FCFA par semaine</strong>. Paiement simple via Wave, Orange Money, MTN Money.
         </p>
       </motion.div>
 
@@ -132,7 +132,6 @@ const PricingSection = () => (
             )}
 
             <div className="p-6 flex flex-col flex-1">
-              {/* Header */}
               <div className="flex items-center gap-3 mb-4">
                 <div
                   className="h-10 w-10 rounded-xl flex items-center justify-center"
@@ -141,17 +140,16 @@ const PricingSection = () => (
                   <plan.icon className="h-5 w-5" style={{ color: plan.color }} />
                 </div>
                 <div>
-                  <h3 className="font-display text-lg font-bold" style={{ color: "hsl(220, 20%, 10%)" }}>
+                  <h3 className="font-display text-lg font-bold text-foreground">
                     {plan.name}
                   </h3>
-                  <p className="text-xs" style={{ color: "hsl(220, 10%, 50%)" }}>{plan.description}</p>
+                  <p className="text-xs text-muted-foreground">{plan.description}</p>
                 </div>
               </div>
 
-              {/* Price */}
               <div className="mb-6 pb-5 border-b border-border">
                 {plan.priceNum === "0" ? (
-                  <span className="font-display text-3xl font-bold" style={{ color: "hsl(220, 20%, 10%)" }}>
+                  <span className="font-display text-3xl font-bold text-foreground">
                     Gratuit
                   </span>
                 ) : (
@@ -159,15 +157,14 @@ const PricingSection = () => (
                     <span className="font-display text-3xl font-bold" style={{ color: plan.color }}>
                       {plan.price}
                     </span>
-                    <span className="text-sm font-semibold" style={{ color: "hsl(220, 10%, 50%)" }}>FCFA/mois</span>
+                    <span className="text-sm font-semibold text-muted-foreground">FCFA{plan.period}</span>
                   </div>
                 )}
               </div>
 
-              {/* Features */}
               <ul className="space-y-2.5 mb-6 flex-1">
                 {plan.features.map((feature) => (
-                  <li key={feature} className="flex items-start gap-2.5 text-sm" style={{ color: "hsl(220, 20%, 20%)" }}>
+                  <li key={feature} className="flex items-start gap-2.5 text-sm text-foreground">
                     <div
                       className="h-4 w-4 rounded-full flex items-center justify-center mt-0.5 shrink-0"
                       style={{ background: `${plan.color}20` }}
@@ -179,7 +176,6 @@ const PricingSection = () => (
                 ))}
               </ul>
 
-              {/* CTA */}
               <Link to={plan.priceNum === "0" ? "/auth?tab=signup" : `/payment?plan=${plan.plan}`}>
                 <Button
                   className="w-full font-semibold"
@@ -199,14 +195,13 @@ const PricingSection = () => (
         ))}
       </div>
 
-      {/* Wave payment note */}
       <motion.div
         className="text-center mt-10"
         initial={{ opacity: 0 }}
         whileInView={{ opacity: 1 }}
         viewport={{ once: true }}
       >
-        <p className="text-sm" style={{ color: "hsl(220, 10%, 50%)" }}>
+        <p className="text-sm text-muted-foreground">
           💳 Paiement accepté : <span className="font-semibold">Wave</span> · Orange Money · MTN Money · Moov Money
         </p>
       </motion.div>
