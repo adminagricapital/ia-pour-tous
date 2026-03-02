@@ -11,7 +11,7 @@ import {
 import { motion, AnimatePresence } from "framer-motion";
 import MarkdownRenderer from "@/components/MarkdownRenderer";
 import HonorBoard from "@/components/HonorBoard";
-
+import CourseAccessGate, { canAccessCourse } from "@/components/CourseAccessGate";
 const CourseReader = () => {
   const { courseId } = useParams();
   const navigate = useNavigate();
@@ -49,6 +49,15 @@ const CourseReader = () => {
 
       if (!enrollRes.data) {
         await supabase.from("enrollments").insert({ course_id: courseId!, user_id: user.id });
+      }
+
+      // Check access
+      const hasAccess = canAccessCourse(courseRes.data?.level, profileRes.data?.plan, profileRes.data?.plan_active);
+      if (!hasAccess) {
+        setCourse(courseRes.data);
+        setProfile(profileRes.data);
+        setLoading(false);
+        return;
       }
 
       if (modulesRes.data?.length) setActiveModule(modulesRes.data[0]);
@@ -144,6 +153,17 @@ const CourseReader = () => {
       </div>
     </div>
   );
+
+  // Access gate - check if user can access this course
+  if (course && !canAccessCourse(course.level, profile?.plan, profile?.plan_active)) {
+    return (
+      <CourseAccessGate
+        courseLevel={course.level}
+        userPlan={profile?.plan}
+        userPlanActive={profile?.plan_active || false}
+      />
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background">

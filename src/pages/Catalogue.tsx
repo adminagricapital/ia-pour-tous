@@ -2,11 +2,12 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Search, Filter, Clock, BookOpen, ArrowRight } from "lucide-react";
+import { Search, Filter, Clock, BookOpen, ArrowRight, Lock } from "lucide-react";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import Navbar from "@/components/landing/Navbar";
 import Footer from "@/components/landing/Footer";
+import { canAccessCourse } from "@/components/CourseAccessGate";
 
 const sectorLabels: Record<string, string> = {
   education: "Éducation",
@@ -50,16 +51,29 @@ const Catalogue = () => {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [sectorFilter, setSectorFilter] = useState("");
+  const [userPlan, setUserPlan] = useState<string | null>(null);
+  const [planActive, setPlanActive] = useState(false);
 
   useEffect(() => {
-    const fetchCourses = async () => {
+    const fetchData = async () => {
       let query = supabase.from("courses").select("*").eq("is_published", true).order("sort_order");
       if (sectorFilter) query = query.eq("sector", sectorFilter as any);
       const { data } = await query;
       setCourses((data as Course[]) || []);
+
+      // Get user plan if logged in
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        const { data: profile } = await supabase.from("profiles").select("plan, plan_active").eq("user_id", user.id).single();
+        if (profile) {
+          setUserPlan(profile.plan);
+          setPlanActive(profile.plan_active || false);
+        }
+      }
+
       setLoading(false);
     };
-    fetchCourses();
+    fetchData();
   }, [sectorFilter]);
 
   const filtered = courses.filter(c =>
@@ -124,41 +138,49 @@ const Catalogue = () => {
             </div>
           ) : (
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {filtered.map((course, i) => (
-                <motion.div
-                  key={course.id}
-                  initial={{ opacity: 0, y: 30 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.4, delay: i * 0.05 }}
-                  className="rounded-xl border border-border bg-card overflow-hidden hover:shadow-lg hover:shadow-primary/5 transition-all group"
-                >
-                  <div className="h-40 gradient-primary flex items-center justify-center">
-                    <BookOpen className="h-16 w-16 text-primary-foreground/30" />
-                  </div>
-                  <div className="p-5">
-                    <div className="flex items-center gap-2 mb-2">
-                      <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${levelColors[course.level] || "bg-muted text-muted-foreground"}`}>
-                        {levelLabels[course.level] || course.level}
-                      </span>
-                      {course.sector && (
-                        <span className="text-xs text-muted-foreground">{sectorLabels[course.sector] || course.sector}</span>
-                      )}
+              {filtered.map((course, i) => {
+                const hasAccess = canAccessCourse(course.level, userPlan, planActive);
+                return (
+                  <motion.div
+                    key={course.id}
+                    initial={{ opacity: 0, y: 30 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.4, delay: i * 0.05 }}
+                    className="rounded-xl border border-border bg-card overflow-hidden hover:shadow-lg hover:shadow-primary/5 transition-all group relative"
+                  >
+                    {!hasAccess && (
+                      <div className="absolute top-3 right-3 z-10 h-8 w-8 rounded-full bg-foreground/80 flex items-center justify-center">
+                        <Lock className="h-4 w-4 text-background" />
+                      </div>
+                    )}
+                    <div className={`h-40 gradient-primary flex items-center justify-center ${!hasAccess ? "opacity-60" : ""}`}>
+                      <BookOpen className="h-16 w-16 text-primary-foreground/30" />
                     </div>
-                    <h3 className="font-display font-semibold text-foreground mb-1">{course.title}</h3>
-                    <p className="text-sm text-muted-foreground line-clamp-2">{course.description}</p>
-                    <div className="flex items-center justify-between mt-4">
-                      <span className="flex items-center gap-1 text-xs text-muted-foreground">
-                        <Clock className="h-3 w-3" /> {course.duration_minutes} min
-                      </span>
-                      <Link to={`/cours/${course.id}`}>
-                        <Button size="sm" variant="ghost" className="text-primary gap-1 group-hover:gap-2 transition-all">
-                          Voir <ArrowRight className="h-3 w-3" />
-                        </Button>
-                      </Link>
+                    <div className="p-5">
+                      <div className="flex items-center gap-2 mb-2">
+                        <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${levelColors[course.level] || "bg-muted text-muted-foreground"}`}>
+                          {levelLabels[course.level] || course.level}
+                        </span>
+                        {course.sector && (
+                          <span className="text-xs text-muted-foreground">{sectorLabels[course.sector] || course.sector}</span>
+                        )}
+                      </div>
+                      <h3 className="font-display font-semibold text-foreground mb-1">{course.title}</h3>
+                      <p className="text-sm text-muted-foreground line-clamp-2">{course.description}</p>
+                      <div className="flex items-center justify-between mt-4">
+                        <span className="flex items-center gap-1 text-xs text-muted-foreground">
+                          <Clock className="h-3 w-3" /> {course.duration_minutes} min
+                        </span>
+                        <Link to={`/cours/${course.id}`}>
+                          <Button size="sm" variant="ghost" className="text-primary gap-1 group-hover:gap-2 transition-all">
+                            {hasAccess ? "Voir" : "Détails"} <ArrowRight className="h-3 w-3" />
+                          </Button>
+                        </Link>
+                      </div>
                     </div>
-                  </div>
-                </motion.div>
-              ))}
+                  </motion.div>
+                );
+              })}
             </div>
           )}
         </div>
