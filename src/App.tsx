@@ -8,6 +8,7 @@ import Auth from "./pages/Auth";
 import Dashboard from "./pages/Dashboard";
 import Admin from "./pages/Admin";
 import AdminSetup from "./pages/AdminSetup";
+import AdminAppointments from "./pages/AdminAppointments";
 import Catalogue from "./pages/Catalogue";
 import Payment from "./pages/Payment";
 import PaymentSuccess from "./pages/PaymentSuccess";
@@ -17,6 +18,7 @@ import Forum from "./pages/Forum";
 import CourseReader from "./pages/CourseReader";
 import NotFound from "./pages/NotFound";
 import Profile from "./pages/Profile";
+import Appointment from "./pages/Appointment";
 
 const queryClient = new QueryClient();
 
@@ -33,12 +35,14 @@ const App = () => (
           <Route path="/profil" element={<Profile />} />
           <Route path="/admin" element={<Admin />} />
           <Route path="/admin/setup" element={<AdminSetup />} />
+          <Route path="/admin/rendez-vous" element={<AdminAppointments />} />
           <Route path="/catalogue" element={<Catalogue />} />
           <Route path="/payment" element={<Payment />} />
           <Route path="/payment/success" element={<PaymentSuccess />} />
           <Route path="/payment/error" element={<PaymentError />} />
           <Route path="/blog" element={<Blog />} />
           <Route path="/forum" element={<Forum />} />
+          <Route path="/rendez-vous" element={<Appointment />} />
           <Route path="/cours/:courseId" element={<CourseReader />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
