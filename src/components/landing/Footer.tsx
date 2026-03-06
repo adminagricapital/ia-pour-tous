@@ -39,7 +39,7 @@ const Footer = () => (
           <h4 className="font-display font-semibold mb-3">Contact</h4>
           <ul className="space-y-2 text-sm opacity-70">
             <li className="flex items-center gap-2"><Mail className="h-4 w-4" /> contact@iapourtous.com</li>
-            <li className="flex items-center gap-2"><Phone className="h-4 w-4" /> +225 07 00 00 00</li>
+            <li className="flex items-center gap-2"><Phone className="h-4 w-4" /> +225 07 59 56 60 87</li>
             <li className="flex items-center gap-2"><MapPin className="h-4 w-4" /> Abidjan, Côte d'Ivoire</li>
           </ul>
         </div>

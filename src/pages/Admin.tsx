@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/dialog";
 import MarkdownRenderer from "@/components/MarkdownRenderer";
 import AdminCourseGenerator from "@/components/admin/AdminCourseGenerator";
+import TipTapEditor from "@/components/admin/TipTapEditor";
 
 const Admin = () => {
   const navigate = useNavigate();
@@ -478,15 +479,16 @@ const Admin = () => {
                     <Input value={generatedPost.slug} onChange={e => setGeneratedPost({ ...generatedPost, slug: e.target.value })} />
                   </div>
                   <div>
-                    <label className="text-xs font-medium text-muted-foreground">Contenu (Markdown)</label>
-                    <Textarea value={generatedPost.content} onChange={e => setGeneratedPost({ ...generatedPost, content: e.target.value })} className="min-h-[200px] font-mono text-xs" />
+                    <label className="text-xs font-medium text-muted-foreground">Contenu (éditeur visuel)</label>
+                    <TipTapEditor
+                      content={generatedPost.content || ""}
+                      onChange={(html) => setGeneratedPost({ ...generatedPost, content: html })}
+                      placeholder="Contenu de l'article..."
+                    />
                   </div>
                 </div>
 
-                <div className="border-t border-border pt-4">
-                  <h4 className="text-sm font-medium text-muted-foreground mb-3">Rendu final :</h4>
-                  <MarkdownRenderer content={generatedPost.content} />
-                </div>
+                {/* TipTap already shows visual preview */}
               </div>
             )}
 

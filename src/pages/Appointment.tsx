@@ -11,7 +11,7 @@ import { motion } from "framer-motion";
 import Navbar from "@/components/landing/Navbar";
 import Footer from "@/components/landing/Footer";
 
-const WHATSAPP_NUMBER = "2250700000000"; // À configurer
+const WHATSAPP_NUMBER = "2250759566087";
 
 const Appointment = () => {
   const navigate = useNavigate();
