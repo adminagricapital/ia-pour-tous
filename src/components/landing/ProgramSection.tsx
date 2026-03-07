@@ -6,7 +6,7 @@ const modules = [
   { emoji: "📄", title: "IA pour vos documents", desc: "Automatisez la rédaction, résumé et analyse de documents", duration: "2h", format: "PDF + Vidéo" },
   { emoji: "🎬", title: "IA & Création de contenu", desc: "Créez des images, vidéos et présentations avec l'IA", duration: "3h", format: "Live + Replay" },
   { emoji: "📖", title: "IA dans votre métier", desc: "Applications concrètes de l'IA dans votre secteur d'activité", duration: "4h", format: "Atelier pratique" },
-  { emoji: "🏆", title: "Projet final & Certificat", desc: "Mettez en pratique vos acquis et obtenez votre certificat", duration: "2h", format: "Projet + Quiz" },
+  { emoji: "🏆", title: "Projet final & Tableau d'honneur", desc: "Réalisez un projet concret et recevez votre tableau d'honneur attestant de vos compétences en IA", duration: "2h", format: "Projet + Évaluation" },
 ];
 
 const ProgramSection = () => (

@@ -144,7 +144,7 @@ const Catalogue = () => {
           ) : (
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
               {filtered.map((course, i) => {
-                const hasAccess = canAccessCourse(course.level, userPlan, planActive);
+                const hasAccess = canAccessCourse(course.level, userPlan, planActive, isAdmin);
                 return (
                   <motion.div
                     key={course.id}

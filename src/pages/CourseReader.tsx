@@ -159,12 +159,13 @@ const CourseReader = () => {
   );
 
   // Access gate - check if user can access this course
-  if (course && !canAccessCourse(course.level, profile?.plan, profile?.plan_active)) {
+  if (course && !canAccessCourse(course.level, profile?.plan, profile?.plan_active, isAdmin)) {
     return (
       <CourseAccessGate
         courseLevel={course.level}
         userPlan={profile?.plan}
         userPlanActive={profile?.plan_active || false}
+        isAdmin={isAdmin}
       />
     );
   }
