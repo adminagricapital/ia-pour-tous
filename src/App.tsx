@@ -19,6 +19,7 @@ import CourseReader from "./pages/CourseReader";
 import NotFound from "./pages/NotFound";
 import Profile from "./pages/Profile";
 import Appointment from "./pages/Appointment";
+import AIAssistant from "./components/AIAssistant";
 
 const queryClient = new QueryClient();
 
@@ -46,6 +47,7 @@ const App = () => (
           <Route path="/cours/:courseId" element={<CourseReader />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
+        <AIAssistant />
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>

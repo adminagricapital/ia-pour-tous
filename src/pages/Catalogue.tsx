@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Search, Filter, Clock, BookOpen, ArrowRight, Lock } from "lucide-react";
+import { Search, Filter, Clock, BookOpen, ArrowRight, Lock, Gift } from "lucide-react";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import Navbar from "@/components/landing/Navbar";
@@ -10,40 +10,22 @@ import Footer from "@/components/landing/Footer";
 import { canAccessCourse } from "@/components/CourseAccessGate";
 
 const sectorLabels: Record<string, string> = {
-  education: "Éducation",
-  commerce: "Commerce",
-  sante: "Santé",
-  artisanat: "Artisanat",
-  eglise: "Églises",
-  association: "Associations",
-  entreprise: "Entreprises",
-  freelance: "Freelances",
-  agriculture: "Agriculture",
-  cyber_imprimerie: "Cyber & Imprimerie",
-  etudiant: "Étudiants",
+  education: "Éducation", commerce: "Commerce", sante: "Santé", artisanat: "Artisanat",
+  eglise: "Églises", association: "Associations", entreprise: "Entreprises", freelance: "Freelances",
+  agriculture: "Agriculture", cyber_imprimerie: "Cyber & Imprimerie", etudiant: "Étudiants",
 };
 
 const levelLabels: Record<string, string> = {
-  debutant: "Débutant",
-  intermediaire: "Intermédiaire",
-  avance: "Avancé",
+  debutant: "Débutant", intermediaire: "Intermédiaire", avance: "Avancé",
 };
 
 const levelColors: Record<string, string> = {
-  debutant: "bg-green-100 text-green-800",
-  intermediaire: "bg-yellow-100 text-yellow-800",
-  avance: "bg-red-100 text-red-800",
+  debutant: "bg-green-100 text-green-800", intermediaire: "bg-yellow-100 text-yellow-800", avance: "bg-red-100 text-red-800",
 };
 
 type Course = {
-  id: string;
-  title: string;
-  description: string | null;
-  thumbnail_url: string | null;
-  level: string;
-  duration_minutes: number;
-  format: string;
-  sector: string | null;
+  id: string; title: string; description: string | null; thumbnail_url: string | null;
+  level: string; duration_minutes: number; format: string; sector: string | null;
 };
 
 const Catalogue = () => {
@@ -62,7 +44,6 @@ const Catalogue = () => {
       const { data } = await query;
       setCourses((data as Course[]) || []);
 
-      // Get user plan and role if logged in
       const { data: { user } } = await supabase.auth.getUser();
       if (user) {
         const [profileRes, roleRes] = await Promise.all([
@@ -75,7 +56,6 @@ const Catalogue = () => {
         }
         setIsAdmin(!!roleRes.data);
       }
-
       setLoading(false);
     };
     fetchData();
@@ -91,17 +71,12 @@ const Catalogue = () => {
       <Navbar />
       <div className="pt-24 pb-20">
         <div className="container mx-auto px-4">
-          <motion.div
-            className="text-center mb-12"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-          >
+          <motion.div className="text-center mb-12" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
             <h1 className="font-display text-3xl sm:text-4xl font-bold text-foreground">
               Catalogue des <span className="gradient-text">Formations</span>
             </h1>
             <p className="text-muted-foreground mt-3 max-w-xl mx-auto">
-              Découvrez nos modules adaptés à chaque secteur d'activité.
+              Découvrez nos modules adaptés à chaque secteur d'activité. Les cours débutants sont <strong>gratuits</strong> !
             </p>
           </motion.div>
 
@@ -112,17 +87,10 @@ const Catalogue = () => {
               <Input placeholder="Rechercher un cours..." value={search} onChange={e => setSearch(e.target.value)} className="pl-10" />
             </div>
             <div className="flex gap-2 flex-wrap">
-              <Button variant={sectorFilter === "" ? "default" : "outline"} size="sm" onClick={() => setSectorFilter("")}>
-                Tous
-              </Button>
+              <Button variant={sectorFilter === "" ? "default" : "outline"} size="sm" onClick={() => setSectorFilter("")}>Tous</Button>
               {Object.entries(sectorLabels).map(([key, label]) => (
-                <Button
-                  key={key}
-                  variant={sectorFilter === key ? "default" : "outline"}
-                  size="sm"
-                  onClick={() => setSectorFilter(key)}
-                  className={sectorFilter === key ? "gradient-primary border-0 text-primary-foreground" : ""}
-                >
+                <Button key={key} variant={sectorFilter === key ? "default" : "outline"} size="sm" onClick={() => setSectorFilter(key)}
+                  className={sectorFilter === key ? "gradient-primary border-0 text-primary-foreground" : ""}>
                   {label}
                 </Button>
               ))}
@@ -132,9 +100,7 @@ const Catalogue = () => {
           {/* Course Grid */}
           {loading ? (
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {[1, 2, 3].map(i => (
-                <div key={i} className="rounded-xl border border-border bg-card p-6 animate-pulse h-64" />
-              ))}
+              {[1, 2, 3].map(i => <div key={i} className="rounded-xl border border-border bg-card p-6 animate-pulse h-64" />)}
             </div>
           ) : filtered.length === 0 ? (
             <div className="text-center py-20">
@@ -145,6 +111,7 @@ const Catalogue = () => {
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
               {filtered.map((course, i) => {
                 const hasAccess = canAccessCourse(course.level, userPlan, planActive, isAdmin);
+                const isFree = course.level === "debutant";
                 return (
                   <motion.div
                     key={course.id}
@@ -153,16 +120,30 @@ const Catalogue = () => {
                     transition={{ duration: 0.4, delay: i * 0.05 }}
                     className="rounded-xl border border-border bg-card overflow-hidden hover:shadow-lg hover:shadow-primary/5 transition-all group relative"
                   >
-                    {!hasAccess && (
+                    {/* Free badge */}
+                    {isFree && (
+                      <div className="absolute top-3 left-3 z-10 flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold shadow-sm"
+                        style={{ background: "hsl(142, 70%, 45%)", color: "white" }}>
+                        <Gift className="h-3 w-3" /> Gratuit
+                      </div>
+                    )}
+                    {/* Lock badge */}
+                    {!hasAccess && !isFree && (
                       <div className="absolute top-3 right-3 z-10 h-8 w-8 rounded-full bg-foreground/80 flex items-center justify-center">
                         <Lock className="h-4 w-4 text-background" />
                       </div>
                     )}
-                    <div className={`h-40 gradient-primary flex items-center justify-center ${!hasAccess ? "opacity-60" : ""}`}>
-                      <BookOpen className="h-16 w-16 text-primary-foreground/30" />
-                    </div>
+
+                    {course.thumbnail_url ? (
+                      <img src={course.thumbnail_url} alt={course.title} className={`w-full h-40 object-cover ${!hasAccess && !isFree ? "opacity-60" : ""}`} />
+                    ) : (
+                      <div className={`h-40 gradient-primary flex items-center justify-center ${!hasAccess && !isFree ? "opacity-60" : ""}`}>
+                        <BookOpen className="h-16 w-16 text-primary-foreground/30" />
+                      </div>
+                    )}
+
                     <div className="p-5">
-                      <div className="flex items-center gap-2 mb-2">
+                      <div className="flex items-center gap-2 mb-2 flex-wrap">
                         <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${levelColors[course.level] || "bg-muted text-muted-foreground"}`}>
                           {levelLabels[course.level] || course.level}
                         </span>
@@ -182,6 +163,10 @@ const Catalogue = () => {
                           </Button>
                         </Link>
                       </div>
+                      {/* Author */}
+                      <p className="text-[10px] text-muted-foreground mt-3 pt-2 border-t border-border">
+                        Par <span className="font-medium">Innocent KOFFI</span> — Innovation & Consulting
+                      </p>
                     </div>
                   </motion.div>
                 );

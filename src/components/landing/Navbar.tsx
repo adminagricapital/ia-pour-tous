@@ -1,12 +1,15 @@
 import { Button } from "@/components/ui/button";
-import { Menu, X } from "lucide-react";
+import { Menu, X, ChevronDown } from "lucide-react";
 import { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
 import logo from "@/assets/logo.png";
 
 const Navbar = () => {
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [user, setUser] = useState<any>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
   const location = useLocation();
   const isHome = location.pathname === "/";
 
@@ -14,6 +17,20 @@ const Navbar = () => {
     const handler = () => setScrolled(window.scrollY > 10);
     window.addEventListener("scroll", handler);
     return () => window.removeEventListener("scroll", handler);
+  }, []);
+
+  useEffect(() => {
+    const checkUser = async () => {
+      const { data: { user: u } } = await supabase.auth.getUser();
+      setUser(u);
+      if (u) {
+        const { data } = await supabase.from("user_roles").select("role").eq("user_id", u.id).eq("role", "admin").maybeSingle();
+        setIsAdmin(!!data);
+      }
+    };
+    checkUser();
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(() => checkUser());
+    return () => subscription.unsubscribe();
   }, []);
 
   const navLinks = isHome ? [
@@ -24,7 +41,7 @@ const Navbar = () => {
 
   const pageLinks = [
     { to: "/catalogue", label: "Catalogue" },
-    { to: "/blog", label: "Blog" },
+    { to: "/blog", label: "Actualités" },
     { to: "/rendez-vous", label: "Rendez-vous" },
   ];
 
@@ -56,17 +73,41 @@ const Navbar = () => {
               {link.label}
             </Link>
           ))}
+          {user && (
+            <Link to="/forum" className="px-3 py-2 rounded-md transition-colors hover:opacity-80" style={{ color: textColor }}>
+              Forum
+            </Link>
+          )}
         </div>
 
         <div className="hidden md:flex items-center gap-2">
-          <Link to="/auth?tab=login">
-            <Button variant="ghost" size="sm" className="font-medium" style={{ color: textColor }}>Connexion</Button>
-          </Link>
-          <Link to="/auth?tab=signup">
-            <Button size="sm" className="font-semibold shadow-sm" style={{ background: "hsl(36, 95%, 48%)", color: "hsl(217, 90%, 10%)" }}>
-              S'inscrire
-            </Button>
-          </Link>
+          {user ? (
+            <>
+              <Link to="/dashboard">
+                <Button size="sm" className="font-semibold shadow-sm" style={{ background: "hsl(36, 95%, 48%)", color: "hsl(217, 90%, 10%)" }}>
+                  Mon espace
+                </Button>
+              </Link>
+              {isAdmin && (
+                <Link to="/admin">
+                  <Button variant="outline" size="sm" className="font-medium" style={{ borderColor: "hsl(217, 90%, 42%)", color: scrolled || !isHome ? "hsl(217, 90%, 42%)" : "white" }}>
+                    Admin
+                  </Button>
+                </Link>
+              )}
+            </>
+          ) : (
+            <>
+              <Link to="/auth?tab=login">
+                <Button variant="ghost" size="sm" className="font-medium" style={{ color: textColor }}>Connexion</Button>
+              </Link>
+              <Link to="/auth?tab=signup">
+                <Button size="sm" className="font-semibold shadow-sm" style={{ background: "hsl(36, 95%, 48%)", color: "hsl(217, 90%, 10%)" }}>
+                  S'inscrire
+                </Button>
+              </Link>
+            </>
+          )}
         </div>
 
         <button className="md:hidden p-2 rounded-md" onClick={() => setOpen(!open)} style={{ color: textColor }}>
@@ -86,15 +127,37 @@ const Navbar = () => {
               {link.label}
             </Link>
           ))}
+          {user && (
+            <Link to="/forum" className="flex items-center px-3 py-2.5 rounded-lg text-sm font-medium" style={{ color: "hsl(220, 20%, 20%)" }} onClick={() => setOpen(false)}>
+              Forum
+            </Link>
+          )}
           <div className="flex flex-col gap-2 pt-3 border-t border-border mt-2">
-            <Link to="/auth?tab=login" onClick={() => setOpen(false)}>
-              <Button variant="outline" className="w-full font-medium" size="sm">Connexion</Button>
-            </Link>
-            <Link to="/auth?tab=signup" onClick={() => setOpen(false)}>
-              <Button className="w-full font-semibold" size="sm" style={{ background: "hsl(36, 95%, 48%)", color: "hsl(217, 90%, 10%)" }}>
-                S'inscrire
-              </Button>
-            </Link>
+            {user ? (
+              <>
+                <Link to="/dashboard" onClick={() => setOpen(false)}>
+                  <Button className="w-full font-semibold" size="sm" style={{ background: "hsl(36, 95%, 48%)", color: "hsl(217, 90%, 10%)" }}>
+                    Mon espace
+                  </Button>
+                </Link>
+                {isAdmin && (
+                  <Link to="/admin" onClick={() => setOpen(false)}>
+                    <Button variant="outline" className="w-full font-medium" size="sm">Panel Admin</Button>
+                  </Link>
+                )}
+              </>
+            ) : (
+              <>
+                <Link to="/auth?tab=login" onClick={() => setOpen(false)}>
+                  <Button variant="outline" className="w-full font-medium" size="sm">Connexion</Button>
+                </Link>
+                <Link to="/auth?tab=signup" onClick={() => setOpen(false)}>
+                  <Button className="w-full font-semibold" size="sm" style={{ background: "hsl(36, 95%, 48%)", color: "hsl(217, 90%, 10%)" }}>
+                    S'inscrire
+                  </Button>
+                </Link>
+              </>
+            )}
           </div>
         </div>
       )}

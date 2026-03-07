@@ -604,7 +604,7 @@ export type Database = {
       course_format: "video" | "pdf" | "texte" | "quiz" | "live"
       course_level: "debutant" | "intermediaire" | "avance"
       payment_status: "pending" | "completed" | "failed" | "cancelled"
-      plan_type: "decouverte" | "essentiel" | "premium"
+      plan_type: "decouverte" | "essentiel" | "premium" | "avance"
       quiz_question_type: "qcm" | "vrai_faux" | "texte_libre"
       sector_type:
         | "education"
@@ -750,7 +750,7 @@ export const Constants = {
       course_format: ["video", "pdf", "texte", "quiz", "live"],
       course_level: ["debutant", "intermediaire", "avance"],
       payment_status: ["pending", "completed", "failed", "cancelled"],
-      plan_type: ["decouverte", "essentiel", "premium"],
+      plan_type: ["decouverte", "essentiel", "premium", "avance"],
       quiz_question_type: ["qcm", "vrai_faux", "texte_libre"],
       sector_type: [
         "education",

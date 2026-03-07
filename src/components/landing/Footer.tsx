@@ -11,8 +11,11 @@ const Footer = () => (
             <img src={logo} alt="IA Pour Tous" className="h-10 w-10 rounded-lg" />
             <span className="font-display text-lg font-bold">IA Pour Tous</span>
           </div>
-          <p className="text-sm opacity-70">
+          <p className="text-sm opacity-70 mb-2">
             Démocratiser l'Intelligence Artificielle pour tous les métiers.
+          </p>
+          <p className="text-xs opacity-50">
+            Par <strong className="opacity-80">Innocent KOFFI</strong> — Innovation & Consulting
           </p>
         </div>
 
@@ -29,7 +32,7 @@ const Footer = () => (
           <h4 className="font-display font-semibold mb-3">Ressources</h4>
           <ul className="space-y-2 text-sm opacity-70">
             <li><Link to="/catalogue" className="hover:opacity-100">Catalogue</Link></li>
-            <li><Link to="/blog" className="hover:opacity-100">Blog</Link></li>
+            <li><Link to="/blog" className="hover:opacity-100">Actualités & Blog</Link></li>
             <li><Link to="/rendez-vous" className="hover:opacity-100">Rendez-vous</Link></li>
             <li><Link to="/forum" className="hover:opacity-100">Forum</Link></li>
           </ul>
@@ -42,11 +45,20 @@ const Footer = () => (
             <li className="flex items-center gap-2"><Phone className="h-4 w-4" /> +225 07 59 56 60 87</li>
             <li className="flex items-center gap-2"><MapPin className="h-4 w-4" /> Abidjan, Côte d'Ivoire</li>
           </ul>
+          <a
+            href="https://wa.me/2250759566087"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 mt-3 px-3 py-1.5 rounded-full text-xs font-medium"
+            style={{ background: "hsl(142, 70%, 45%)", color: "white" }}
+          >
+            💬 WhatsApp
+          </a>
         </div>
       </div>
 
       <div className="border-t mt-10 pt-6 text-center text-xs opacity-40" style={{ borderColor: "hsla(0,0%,100%,0.1)" }}>
-        © 2025 IA Pour Tous. Tous droits réservés.
+        © 2025 IA Pour Tous — Innocent KOFFI, Innovation & Consulting. Tous droits réservés.
       </div>
     </div>
   </footer>

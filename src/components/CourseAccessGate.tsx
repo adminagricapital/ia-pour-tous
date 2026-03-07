@@ -13,19 +13,21 @@ interface CourseAccessGateProps {
 const planHierarchy: Record<string, number> = {
   decouverte: 0,
   essentiel: 1,
-  premium: 2,
+  avance: 2,
+  premium: 3,
 };
 
 const levelToPlan: Record<string, string> = {
   debutant: "decouverte",
   intermediaire: "essentiel",
-  avance: "premium",
+  avance: "avance",
 };
 
 const planLabels: Record<string, string> = {
   decouverte: "Découverte (Gratuit)",
-  essentiel: "Essentiel (5 000 FCFA)",
-  premium: "Premium (10 000 FCFA)",
+  essentiel: "Essentiel (500 FCFA/sem)",
+  avance: "Avancé (1 500 FCFA/sem)",
+  premium: "Premium (2 500 FCFA/sem)",
 };
 
 export const canAccessCourse = (courseLevel: string | null, userPlan: string | null, planActive: boolean, isAdmin?: boolean): boolean => {
