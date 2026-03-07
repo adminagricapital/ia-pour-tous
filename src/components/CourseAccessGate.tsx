@@ -13,7 +13,8 @@ interface CourseAccessGateProps {
 const planHierarchy: Record<string, number> = {
   decouverte: 0,
   essentiel: 1,
-  premium: 2,
+  avance: 2,
+  premium: 3,
 };
 
 const levelToPlan: Record<string, string> = {
