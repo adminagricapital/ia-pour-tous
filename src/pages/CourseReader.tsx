@@ -28,6 +28,7 @@ const CourseReader = () => {
   const [savedOffline, setSavedOffline] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [profile, setProfile] = useState<any>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
   const [showHonorBoard, setShowHonorBoard] = useState(false);
 
   useEffect(() => {

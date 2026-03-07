@@ -41,7 +41,8 @@ export const canAccessCourse = (courseLevel: string | null, userPlan: string | n
   return (planHierarchy[userPlan] || 0) >= (planHierarchy[requiredPlan] || 0);
 };
 
-const CourseAccessGate = ({ courseLevel, userPlan, userPlanActive }: CourseAccessGateProps) => {
+const CourseAccessGate = ({ courseLevel, userPlan, userPlanActive, isAdmin }: CourseAccessGateProps) => {
+  if (isAdmin) return null; // Admin never sees this gate
   const requiredPlan = levelToPlan[courseLevel || "debutant"] || "essentiel";
   const requiredLabel = planLabels[requiredPlan] || "Essentiel";
 
