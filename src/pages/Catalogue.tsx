@@ -53,6 +53,7 @@ const Catalogue = () => {
   const [sectorFilter, setSectorFilter] = useState("");
   const [userPlan, setUserPlan] = useState<string | null>(null);
   const [planActive, setPlanActive] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -61,14 +62,18 @@ const Catalogue = () => {
       const { data } = await query;
       setCourses((data as Course[]) || []);
 
-      // Get user plan if logged in
+      // Get user plan and role if logged in
       const { data: { user } } = await supabase.auth.getUser();
       if (user) {
-        const { data: profile } = await supabase.from("profiles").select("plan, plan_active").eq("user_id", user.id).single();
-        if (profile) {
-          setUserPlan(profile.plan);
-          setPlanActive(profile.plan_active || false);
+        const [profileRes, roleRes] = await Promise.all([
+          supabase.from("profiles").select("plan, plan_active").eq("user_id", user.id).single(),
+          supabase.from("user_roles").select("role").eq("user_id", user.id).eq("role", "admin").maybeSingle(),
+        ]);
+        if (profileRes.data) {
+          setUserPlan(profileRes.data.plan);
+          setPlanActive(profileRes.data.plan_active || false);
         }
+        setIsAdmin(!!roleRes.data);
       }
 
       setLoading(false);
