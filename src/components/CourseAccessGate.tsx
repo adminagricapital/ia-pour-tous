@@ -7,30 +7,33 @@ interface CourseAccessGateProps {
   courseLevel: string | null;
   userPlan: string | null;
   userPlanActive: boolean;
+  isAdmin?: boolean;
 }
 
 const planHierarchy: Record<string, number> = {
   decouverte: 0,
   essentiel: 1,
-  avance: 2,
-  premium: 3,
+  premium: 2,
 };
 
 const levelToPlan: Record<string, string> = {
-  debutant: "essentiel",
-  intermediaire: "avance",
+  debutant: "decouverte",
+  intermediaire: "essentiel",
   avance: "premium",
 };
 
 const planLabels: Record<string, string> = {
-  essentiel: "Essentiel (500 FCFA/sem)",
-  avance: "Avancé (1 500 FCFA/sem)",
-  premium: "Premium (2 500 FCFA/sem)",
+  decouverte: "Découverte (Gratuit)",
+  essentiel: "Essentiel (5 000 FCFA)",
+  premium: "Premium (10 000 FCFA)",
 };
 
-export const canAccessCourse = (courseLevel: string | null, userPlan: string | null, planActive: boolean): boolean => {
+export const canAccessCourse = (courseLevel: string | null, userPlan: string | null, planActive: boolean, isAdmin?: boolean): boolean => {
+  // Admin has lifetime access to everything
+  if (isAdmin) return true;
+  
   if (!courseLevel) return true;
-  if (courseLevel === "debutant") return true; // Free courses accessible to all
+  if (courseLevel === "debutant") return true; // Free courses accessible to all logged-in users
   
   if (!planActive || !userPlan) return false;
   
@@ -38,7 +41,8 @@ export const canAccessCourse = (courseLevel: string | null, userPlan: string | n
   return (planHierarchy[userPlan] || 0) >= (planHierarchy[requiredPlan] || 0);
 };
 
-const CourseAccessGate = ({ courseLevel, userPlan, userPlanActive }: CourseAccessGateProps) => {
+const CourseAccessGate = ({ courseLevel, userPlan, userPlanActive, isAdmin }: CourseAccessGateProps) => {
+  if (isAdmin) return null; // Admin never sees this gate
   const requiredPlan = levelToPlan[courseLevel || "debutant"] || "essentiel";
   const requiredLabel = planLabels[requiredPlan] || "Essentiel";
 
