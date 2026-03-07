@@ -4,6 +4,7 @@ import ForWhoSection from "@/components/landing/ForWhoSection";
 import AIToolsSection from "@/components/landing/AIToolsSection";
 import ProgramSection from "@/components/landing/ProgramSection";
 import PricingSection from "@/components/landing/PricingSection";
+import BlogSection from "@/components/landing/BlogSection";
 import TestimonialsSection from "@/components/landing/TestimonialsSection";
 import Footer from "@/components/landing/Footer";
 
@@ -16,6 +17,7 @@ const Index = () => {
       <AIToolsSection />
       <ProgramSection />
       <PricingSection />
+      <BlogSection />
       <TestimonialsSection />
       <Footer />
     </main>
