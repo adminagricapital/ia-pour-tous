@@ -36,13 +36,16 @@ const CourseReader = () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) { navigate("/auth"); return; }
 
-      const [courseRes, modulesRes, enrollRes, profileRes] = await Promise.all([
+      const [courseRes, modulesRes, enrollRes, profileRes, roleRes] = await Promise.all([
         supabase.from("courses").select("*").eq("id", courseId!).single(),
         supabase.from("modules").select("*").eq("course_id", courseId!).order("sort_order"),
         supabase.from("enrollments").select("*").eq("course_id", courseId!).eq("user_id", user.id).maybeSingle(),
         supabase.from("profiles").select("*").eq("user_id", user.id).single(),
+        supabase.from("user_roles").select("role").eq("user_id", user.id).eq("role", "admin").maybeSingle(),
       ]);
 
+      const userIsAdmin = !!roleRes.data;
+      setIsAdmin(userIsAdmin);
       setCourse(courseRes.data);
       setModules(modulesRes.data || []);
       setEnrollment(enrollRes.data);
@@ -52,8 +55,8 @@ const CourseReader = () => {
         await supabase.from("enrollments").insert({ course_id: courseId!, user_id: user.id });
       }
 
-      // Check access
-      const hasAccess = canAccessCourse(courseRes.data?.level, profileRes.data?.plan, profileRes.data?.plan_active);
+      // Check access - admin always has access
+      const hasAccess = canAccessCourse(courseRes.data?.level, profileRes.data?.plan, profileRes.data?.plan_active, userIsAdmin);
       if (!hasAccess) {
         setCourse(courseRes.data);
         setProfile(profileRes.data);
