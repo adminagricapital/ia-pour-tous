@@ -25,8 +25,9 @@ const levelToPlan: Record<string, string> = {
 
 const planLabels: Record<string, string> = {
   decouverte: "Découverte (Gratuit)",
-  essentiel: "Essentiel (5 000 FCFA)",
-  premium: "Premium (10 000 FCFA)",
+  essentiel: "Essentiel (500 FCFA/sem)",
+  avance: "Avancé (1 500 FCFA/sem)",
+  premium: "Premium (2 500 FCFA/sem)",
 };
 
 export const canAccessCourse = (courseLevel: string | null, userPlan: string | null, planActive: boolean, isAdmin?: boolean): boolean => {
