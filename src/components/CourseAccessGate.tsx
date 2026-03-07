@@ -20,7 +20,7 @@ const planHierarchy: Record<string, number> = {
 const levelToPlan: Record<string, string> = {
   debutant: "decouverte",
   intermediaire: "essentiel",
-  avance: "premium",
+  avance: "avance",
 };
 
 const planLabels: Record<string, string> = {
