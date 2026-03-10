@@ -71,7 +71,7 @@ const AdminPortfolio = () => {
   };
 
   const deleteVideo = async (id: string) => {
-    await supabase.from("portfolio_videos").delete().eq("id", id);
+    await (supabase.from("portfolio_videos") as any).delete().eq("id", id);
     setVideos(videos.filter(v => v.id !== id));
     toast({ title: "Supprimé" });
   };
