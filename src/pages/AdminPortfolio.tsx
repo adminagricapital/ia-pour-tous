@@ -65,7 +65,7 @@ const AdminPortfolio = () => {
   };
 
   const deleteWebsite = async (id: string) => {
-    await supabase.from("portfolio_websites").delete().eq("id", id);
+    await (supabase.from("portfolio_websites") as any).delete().eq("id", id);
     setWebsites(websites.filter(w => w.id !== id));
     toast({ title: "Supprimé" });
   };
