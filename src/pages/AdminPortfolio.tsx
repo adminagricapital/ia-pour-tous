@@ -77,7 +77,7 @@ const AdminPortfolio = () => {
   };
 
   const togglePublish = async (table: string, id: string, current: boolean) => {
-    await supabase.from(table).update({ is_published: !current } as any).eq("id", id);
+    await (supabase.from(table as any) as any).update({ is_published: !current }).eq("id", id);
     if (table === "portfolio_websites") {
       setWebsites(websites.map(w => w.id === id ? { ...w, is_published: !current } : w));
     } else {
