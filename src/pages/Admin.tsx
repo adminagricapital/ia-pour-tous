@@ -190,12 +190,17 @@ const Admin = () => {
       </header>
 
       <div className="container mx-auto px-4 py-6">
-        <div className="flex gap-2 overflow-x-auto pb-4 mb-6">
+        <div className="flex gap-2 overflow-x-auto pb-4 mb-6 flex-wrap">
           {tabs.map(t => (
             <Button key={t.id} variant={tab === t.id ? "default" : "ghost"} size="sm" onClick={() => setTab(t.id)}
               className={`gap-2 shrink-0 ${tab === t.id ? "gradient-primary border-0 text-primary-foreground" : ""}`}>
               <t.icon className="h-4 w-4" /> {t.label}
             </Button>
+          ))}
+          {externalLinks.map(l => (
+            <Link key={l.to} to={l.to}>
+              <Button variant="outline" size="sm" className="shrink-0">{l.label}</Button>
+            </Link>
           ))}
         </div>
 
