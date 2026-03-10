@@ -174,6 +174,12 @@ const Admin = () => {
     { id: "blog", label: "Blog IA", icon: Sparkles },
   ];
 
+  const externalLinks = [
+    { to: "/admin/rendez-vous", label: "📅 Rendez-vous" },
+    { to: "/admin/portfolio", label: "📁 Portfolio" },
+    { to: "/messages", label: "💬 Messagerie" },
+  ];
+
   return (
     <div className="min-h-screen bg-background">
       <header className="border-b border-border bg-card">
