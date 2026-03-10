@@ -56,7 +56,7 @@ const AdminPortfolio = () => {
 
   const addVideo = async () => {
     if (!newVideo.title) return;
-    const { error } = await supabase.from("portfolio_videos").insert(newVideo as any);
+    const { error } = await (supabase.from("portfolio_videos") as any).insert(newVideo);
     if (error) { toast({ title: "Erreur", description: error.message, variant: "destructive" }); return; }
     toast({ title: "Vidéo ajoutée !" });
     const { data } = await supabase.from("portfolio_videos").select("*").order("sort_order");
