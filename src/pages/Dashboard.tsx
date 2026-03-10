@@ -234,9 +234,10 @@ const Dashboard = () => {
               <div className="grid grid-cols-2 gap-2">
                 {[
                   { icon: BookOpen, label: "Catalogue", to: "/catalogue" },
-                  { icon: MessageSquare, label: "Forum", to: "/forum" },
+                  { icon: MessageSquare, label: "Messages", to: "/messages" },
                   { icon: TrendingUp, label: "Blog IA", to: "/blog" },
                   { icon: User, label: "Mon profil", to: "/profil" },
+                  { icon: Calendar, label: "Rendez-vous", to: "/rendez-vous" },
                 ].map((link) => (
                   <Link
                     key={link.label}
