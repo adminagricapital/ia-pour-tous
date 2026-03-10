@@ -46,7 +46,7 @@ const AdminPortfolio = () => {
 
   const addWebsite = async () => {
     if (!newSite.title) return;
-    const { error } = await supabase.from("portfolio_websites").insert(newSite as any);
+    const { error } = await (supabase.from("portfolio_websites") as any).insert(newSite);
     if (error) { toast({ title: "Erreur", description: error.message, variant: "destructive" }); return; }
     toast({ title: "Site ajouté !" });
     const { data } = await supabase.from("portfolio_websites").select("*").order("sort_order");
